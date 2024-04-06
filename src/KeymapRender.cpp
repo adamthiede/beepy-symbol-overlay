@@ -29,12 +29,12 @@ static const auto symkey_alpha_table
 static const auto belt_labels
 	= std::vector<std::pair<char const*, char const*>>
 	{ {"Ctrl", "Call"}, {"Meta", "Berry"}
-	, {"Touch", ""}, { "Esc", "Back"}
+	, {"", ""}, { "Esc", "Back"}
 	, {"Tmux", "End"}
 };
 
 template <typename RenderFunc>
-static void render_map(unsigned char* pix, size_t width, size_t height, size_t cell_width, size_t cell_height,
+static void render_map(char const* map_label, unsigned char* pix, size_t width, size_t height, size_t cell_width, size_t cell_height,
 	PSF& psf, RenderFunc&& render)
 {
 	// Set to white background
@@ -59,7 +59,9 @@ static void render_map(unsigned char* pix, size_t width, size_t height, size_t c
 				}
 			}
 
-			auto label = belt_labels[col].first;
+			auto label = (col == 2)
+				? map_label
+				: belt_labels[col].first;
 			auto label_len = ::strlen(label);
 			auto key = belt_labels[col].second;
 			auto key_len = ::strlen(key);
@@ -152,7 +154,7 @@ KeymapRender::KeymapRender(unsigned char const* psf_data, size_t psf_size)
 KeymapRender::KeymapRender(unsigned char const* psf_data, size_t psf_size, Keymap const& keymap)
 	: KeymapRender(psf_data, psf_size)
 {
-	render_map(m_pix.get(), m_width, m_height, m_cellWidth, m_cellHeight, m_psf,
+	render_map("SYMBOLS", m_pix.get(), m_width, m_height, m_cellWidth, m_cellHeight, m_psf,
 		[this, &keymap](size_t row, size_t col, int symkey) {
 
 			// Look up symbol
@@ -178,7 +180,7 @@ KeymapRender::KeymapRender(unsigned char const* psf_data, size_t psf_size, Keyma
 KeymapRender::KeymapRender(unsigned char const* psf_data, size_t psf_size, KeymapRender::ThreeKeymap const& threeKeymap)
 	: KeymapRender(psf_data, psf_size)
 {
-	render_map(m_pix.get(), m_width, m_height, m_cellWidth, m_cellHeight, m_psf,
+	render_map("META", m_pix.get(), m_width, m_height, m_cellWidth, m_cellHeight, m_psf,
 		[this, &threeKeymap](size_t row, size_t col, int symkey) {
 
 			// Look up symbol
