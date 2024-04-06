@@ -1,4 +1,5 @@
 *.o
 symbol-overlay
+symbol-overlay-test
 libxkbcommon
 x11map
