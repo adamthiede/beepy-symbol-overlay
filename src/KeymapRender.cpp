@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <array>
 
 #include "KeymapRender.hpp"
 
@@ -11,6 +12,7 @@ static constexpr auto fret_height = 4;
 static constexpr auto cell_padding = 1;
 static constexpr auto char_padding = 1;
 
+static constexpr auto num_belt_rows = 1;
 static constexpr auto num_rows = 3;
 static constexpr auto num_cols = 10;
 
@@ -24,6 +26,13 @@ static const auto symkey_alpha_table
 	  , {49, 'N'}, {50, 'M'}, {113, '$'} }
 };
 
+static const auto belt_labels
+	= std::vector<std::pair<char const*, char const*>>
+	{ {"Ctrl", "Call"}, {"Meta", "Berry"}
+	, {"Touch", ""}, { "Esc", "Back"}
+	, {"Tmux", "End"}
+};
+
 template <typename RenderFunc>
 static void render_map(unsigned char* pix, size_t width, size_t height, size_t cell_width, size_t cell_height,
 	PSF& psf, RenderFunc&& render)
@@ -31,8 +40,60 @@ static void render_map(unsigned char* pix, size_t width, size_t height, size_t c
 	// Set to white background
 	::memset(pix, 0xff, width * height);
 
+	// Render belt labels
+	auto belt_cell_width = width / 5;
+	{ auto row = 0;
+
+		// Render fret
+		::memset(&pix[(row * cell_height) * width], 0,
+			width * fret_height);
+
+		for (size_t col = 0; col < 5; col++) {
+
+			// Render cell padding
+			for (size_t y = fret_height; y < cell_height; y++) {
+				for (size_t x = 0; x < cell_padding; x++) {
+					auto dx = (col * belt_cell_width) + x;
+					auto dy = (row * cell_height) + y;
+					pix[dy * width + dx] = 0;
+				}
+			}
+
+			auto label = belt_labels[col].first;
+			auto label_len = ::strlen(label);
+			auto key = belt_labels[col].second;
+			auto key_len = ::strlen(key);
+
+			// Draw key
+			for (auto i = 0; i < key_len; i++) {
+				auto x = (col * belt_cell_width) + char_padding + (i * psf.getWidth());
+				if (col < 2) {
+					x += cell_padding + char_padding;
+				} else {
+					x += (belt_cell_width - (cell_padding + char_padding + key_len * psf.getWidth()));
+				}
+				psf.drawUtf16(key[i],
+					pix, width, height, x,
+					(row * cell_height) + fret_height + char_padding,
+					1);
+			}
+
+			// Draw label
+			auto centered = (belt_cell_width - (label_len * psf.getWidth())) / 2;
+			for (auto i = 0; label[i] != '\0'; i++) {
+				psf.drawUtf16(label[i],
+					pix, width, height,
+					(col * belt_cell_width) + char_padding + (i * psf.getWidth()) + centered,
+					(row * cell_height) + fret_height + char_padding + psf.getHeight(),
+					1);
+			}
+		}
+	}
+
 	// Render rows
-	for (size_t row = 0; row < num_rows; row++) {
+	for (size_t row = num_belt_rows; row < num_belt_rows + num_rows; row++) {
+
+		auto key_row = row - num_belt_rows;
 
 		// Render fret
 		::memset(&pix[(row * cell_height) * width], 0,
@@ -51,11 +112,11 @@ static void render_map(unsigned char* pix, size_t width, size_t height, size_t c
 			}
 
 			// Get alpha / symbol keys
-			if ((symkey_alpha_table.size() <= row)
-			 || (symkey_alpha_table[row].size() <= col)) {
+			if ((symkey_alpha_table.size() <= key_row)
+			 || (symkey_alpha_table[key_row].size() <= col)) {
 				continue;
 			}
-			auto const& [symkey, alpha_utf16] = symkey_alpha_table[row][col];
+			auto const& [symkey, alpha_utf16] = symkey_alpha_table[key_row][col];
 			if (symkey == 0) {
 				continue;
 			}
@@ -84,7 +145,7 @@ KeymapRender::KeymapRender(unsigned char const* psf_data, size_t psf_size)
 	, m_cellWidth{40}
 	, m_cellHeight{fret_height + char_padding + 2 * m_psf.getHeight()}
 	, m_width{400}
-	, m_height{num_rows * m_cellHeight}
+	, m_height{(num_belt_rows + num_rows) * m_cellHeight}
 	, m_pix{new unsigned char[m_width * m_height]}
 {}
 
