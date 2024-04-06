@@ -237,4 +237,13 @@ KeymapRender::KeymapRender(unsigned char const* psf_data, size_t psf_size, Keyma
 			return true;
 		}
 	);
+
+	// Invert the meta toolbelt key
+	auto belt_cell_width = m_width / 5;
+	for (auto y = fret_height; y < m_cellHeight; y++) {
+		for (auto x = (1 * belt_cell_width) + cell_padding; x < (1 * belt_cell_width) + cell_padding + belt_cell_width; x++) {
+			auto& pix = m_pix.get()[(y * m_width) + x];
+			pix = (pix) ? 0 : 0xff;
+		}
+	}
 }
