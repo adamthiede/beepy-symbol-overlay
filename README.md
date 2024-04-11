@@ -1,3 +1,8 @@
+---
+title: Beepy Symbol Overlay Utility
+layout: default
+---
+
 # Beepy Symbol Overlay
 
 ## User Guide
@@ -6,7 +11,7 @@ This is a helper utility to display a visual keymap on top of the Beepy display 
 
 ### Symbol Entry Overlay
 
-![Symbol entry overlay](docs/assets/overlay-symbol.png)
+![Symbol entry overlay](assets/overlay-symbol.png)
 
 Pressing the Sym key once will apply the AltGr modifier to the next alpha keypress. The default Beepy keymap maps AltGr and alpha key combinations to commonly used symbols. While in Symbol entry mode, a "S" indicator will appear at the top-right of the screen.
 
@@ -14,7 +19,7 @@ Holding the Sym key for more than one second will both enable Symbol entry mode,
 
 ### Meta Mode Overlay
 
-![Meta mode overlay](docs/assets/overlay-meta.png)
+![Meta mode overlay](assets/overlay-meta.png)
 
 Pressing the Berry key once will enter "Meta" mode, a shortcut mode that remaps the physical alpha keys to shortcuts and cursor movement keys such as arrow keys, Home, and End. While in Meta mode, a Star indicator will appear at the top-right of the screen.
 
@@ -47,4 +52,4 @@ Regenerating X11 keymap:
 git clone git@github.com:xkbcommon/libxkbcommon.git
 g++ x11map.cpp -Ilibxkbcommon/include/ -Llibxkbcommon/build -lxkbcommon $(pkg-config --cflags --libs x11) -o x11map
 ./x11map > src/x11name_to_utf16.cpp
-``
+```
