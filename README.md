@@ -6,7 +6,7 @@ This is a helper utility to display a visual keymap on top of the Beepy display 
 
 ### Symbol Entry Overlay
 
-![doc/overlay-symbol.png](Symbol mode overlay)
+![Symbol entry overlay](docs/assets/overlay-symbol.png)
 
 Pressing the Sym key once will apply the AltGr modifier to the next alpha keypress. The default Beepy keymap maps AltGr and alpha key combinations to commonly used symbols. While in Symbol entry mode, a "S" indicator will appear at the top-right of the screen.
 
@@ -14,7 +14,7 @@ Holding the Sym key for more than one second will both enable Symbol entry mode,
 
 ### Meta Mode Overlay
 
-![doc/overlay-meta.png](Meta mode overlay)
+![Meta mode overlay](docs/assets/overlay-meta.png)
 
 Pressing the Berry key once will enter "Meta" mode, a shortcut mode that remaps the physical alpha keys to shortcuts and cursor movement keys such as arrow keys, Home, and End. While in Meta mode, a Star indicator will appear at the top-right of the screen.
 
@@ -33,7 +33,7 @@ sharp_dev    Sharp device to command (e.g. /dev/dri/card0)
   (default /usr/share/kbd/keymaps/beepy-kbd.map)
 ```
 
-Building SDL2 test
+Building SDL2 test utility:
 
 ```
 make symbol-overlay-test
@@ -41,7 +41,7 @@ make symbol-overlay-test
 ./symbol-overlay-test --meta .
 ```
 
-Regenerating X11 keymap
+Regenerating X11 keymap:
 
 ```
 git clone git@github.com:xkbcommon/libxkbcommon.git
