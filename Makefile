@@ -1,6 +1,8 @@
 CXX ?= g++
 OBJCOPY ?= objcopy
 CXXFLAGS := -g -O2 -std=c++17 $(CXXFLAGS)
+TARGET ?= $(shell $(OBJCOPY) --info | sed -n '2 p')
+
 
 .PHONY: clean
 
@@ -20,15 +22,12 @@ src/x11name_to_utf16.o: src/x11name_to_utf16.cpp
 	$(CXX) -O2 -std=c++17 -c $^ -o $@
 
 src/font.o: font.psf
-	$(OBJCOPY) -O elf32-littlearm -I binary $< $@
-
-src/font.x86.o: font.psf
-	$(OBJCOPY) -O elf64-x86-64 -I binary $< $@
+	$(OBJCOPY) -O $(TARGET) -I binary $< $@
 
 symbol-overlay: src/main.o src/KeymapRender.o src/Overlay.o src/PSF.o src/x11name_to_utf16.o src/font.o
 	$(CXX) -static $^ -o $@
 
-symbol-overlay-test: src/main.o src/KeymapRender.o src/Overlay.SDL.o src/PSF.o src/x11name_to_utf16.o src/font.x86.o
+symbol-overlay-test: src/main.o src/KeymapRender.o src/Overlay.SDL.o src/PSF.o src/x11name_to_utf16.o src/font.o
 	$(CXX) $^ -o $@ $(sdl2-config --libs) -lSDL2
 
 clean:
