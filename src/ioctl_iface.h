@@ -6,14 +6,21 @@ void ioctl_remove(void);
 
 struct sharp_overlay_t
 {
-	int x, y, width, height;
-	unsigned char const *pixels;
+	int x;
+	int y;
+	int width;
+	int height;
+	const unsigned char *pixels;
 };
 
-union sharp_memory_ioctl_ov_add_t
+struct sharp_memory_ioctl_ov_add_t
 {
-	struct sharp_overlay_t *in_overlay;
-	void *out_storage;
+	__s32 x;
+	__s32 y;
+	__s32 width;
+	__s32 height;
+	__u64 pixels;
+	__u64 out_storage;
 };
 
 struct sharp_memory_ioctl_ov_rem_t
@@ -21,16 +28,17 @@ struct sharp_memory_ioctl_ov_rem_t
 	void *storage;
 };
 
-union sharp_memory_ioctl_ov_show_t
+struct sharp_memory_ioctl_ov_show_t
 {
-	void *in_storage;
-	void *out_display;
+	__u64 in_storage;
+	__u64 out_display;
 };
 
 struct sharp_memory_ioctl_ov_hide_t
 {
-	void *display;
+    __u64 display;
 };
+
 
 int sharp_memory_ioctl_redraw(struct drm_device *dev, void *,
 	struct drm_file *file);
@@ -61,13 +69,13 @@ int sharp_memory_ioctl_ov_clear(struct drm_device *dev, void *,
 
 #define DRM_IOCTL_SHARP_OV_ADD \
 	DRM_IOWR(DRM_COMMAND_BASE + DRM_SHARP_OV_ADD, \
-		union sharp_memory_ioctl_ov_add_t)
+		struct sharp_memory_ioctl_ov_add_t)
 #define DRM_IOCTL_SHARP_OV_REM \
 	DRM_IOW(DRM_COMMAND_BASE + DRM_SHARP_OV_REM, \
 		struct sharp_memory_ioctl_ov_rem_t)
 #define DRM_IOCTL_SHARP_OV_SHOW \
 	DRM_IOWR(DRM_COMMAND_BASE + DRM_SHARP_OV_SHOW, \
-		union sharp_memory_ioctl_ov_show_t)
+		struct sharp_memory_ioctl_ov_show_t)
 #define DRM_IOCTL_SHARP_OV_HIDE \
 	DRM_IOW(DRM_COMMAND_BASE + DRM_SHARP_OV_HIDE, \
 		struct sharp_memory_ioctl_ov_hide_t)

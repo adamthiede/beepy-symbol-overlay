@@ -4,6 +4,7 @@
 #include <string.h>
 #include <limits.h>
 #include <sys/ioctl.h>
+#include <cstdint>
 
 #include <stdexcept>
 
@@ -18,15 +19,24 @@ using namespace std::literals;
 
 static auto overlay_add(int fd, sharp_overlay_t overlay)
 {
-	auto param = sharp_memory_ioctl_ov_add_t { .in_overlay = &overlay };
-	if (auto rc = ::ioctl(fd, DRM_IOCTL_SHARP_OV_ADD, &param)) {
-		throw std::runtime_error(__func__ + " failed: "s + ::strerror(rc));
-	}
-	if ((param.out_storage == NULL)
-	 || ((void*)param.in_overlay == (void*)&param)) {
-		throw std::runtime_error(__func__ + " failed: ioctl returned invalid result"s);
-	}
-	return param.out_storage;
+    auto param = sharp_memory_ioctl_ov_add_t {
+        .x = overlay.x,
+        .y = overlay.y,
+        .width = overlay.width,
+        .height = overlay.height,
+        .pixels = (uint64_t)(uintptr_t)overlay.pixels,
+        .out_storage = 0,
+    };
+
+    if (::ioctl(fd, DRM_IOCTL_SHARP_OV_ADD, &param) < 0) {
+        throw std::runtime_error(__func__ + " failed: "s + ::strerror(errno));
+    }
+
+    if (param.out_storage == 0) {
+        throw std::runtime_error(__func__ + " failed: ioctl returned invalid result"s);
+    }
+
+    return (void*)(uintptr_t)param.out_storage;
 }
 
 static void overlay_remove(int fd, void* storage)
@@ -39,20 +49,23 @@ static void overlay_remove(int fd, void* storage)
 
 static auto overlay_show(int fd, void *storage)
 {
-	auto param = sharp_memory_ioctl_ov_show_t { .in_storage = storage };
+	auto param = sharp_memory_ioctl_ov_show_t {
+		.in_storage = (uint64_t)(uintptr_t)storage
+	};
 	if (auto rc = ::ioctl(fd, DRM_IOCTL_SHARP_OV_SHOW, &param)) {
 		throw std::runtime_error(__func__ + " failed: "s + ::strerror(rc));
 	}
-	if ((param.out_display == NULL)
-	 || ((void*)param.out_display == &param)) {
+	if (param.out_display == 0) {
 		throw std::runtime_error(__func__ + " failed: ioctl returned invalid result"s);
 	}
-	return param.out_display;
+	return (void*)(uintptr_t)param.out_display;
 }
 
 static void overlay_hide(int fd, void* display)
 {
-	auto param = sharp_memory_ioctl_ov_hide_t { .display = display };
+	auto param = sharp_memory_ioctl_ov_hide_t {
+		.display = (uint64_t)(uintptr_t)display
+	};
 	if (auto rc = ::ioctl(fd, DRM_IOCTL_SHARP_OV_HIDE, &param)) {
 		throw std::runtime_error(__func__ + " failed: "s + ::strerror(rc));
 	}
@@ -60,9 +73,9 @@ static void overlay_hide(int fd, void* display)
 
 static void overlay_clear(int fd)
 {
-	if (auto rc = ::ioctl(fd, DRM_IOCTL_SHARP_OV_CLEAR)) {
-		throw std::runtime_error(__func__ + " failed: "s + ::strerror(rc));
-	}
+	if (::ioctl(fd, DRM_IOCTL_SHARP_OV_CLEAR) < 0) {
+        throw std::runtime_error(__func__ + " failed: "s + ::strerror(errno));
+    }
 }
 
 SharpSession::SharpSession(char const* sharp_dev)
